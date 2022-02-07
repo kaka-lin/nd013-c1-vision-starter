@@ -3,3 +3,8 @@
 
 # data
 data
+
+pretrained_model/
+eval/
+exported/
+train/
