@@ -141,20 +141,129 @@ python inference_video.py --labelmap_path label_map.pbtxt --model_path experimen
 ## Submission Template
 
 ### Project overview
-This section should contain a brief description of the project and what we are trying to achieve. Why is object detection such an important component of self driving car systems?
+
+This repository is for `Udacity Self Driving Car Engineer Nanodegree` project.
+
+This project's goal is to develop an object detection model for a self-driving car. Object detection is such an important component of the self-driving car system because it allows the car to understand its surroundings and plan accordingly.
+
+This project have several steps as below:
+
+1. Download the `Waymo Open Dataset`
+2. Exploratory Data Analysis: known our dataset
+3. Split dataset: split data into three groups (train, validatin and test)
+4. Traning and validation: which have many different experiments to try to improve the performance of the model
 
 ### Set up
-This section should contain a brief description of the steps to follow to run the code for this repository.
+
+For local setup if you have your own Nvidia GPU, you can use the provided Dockerfile and requirements in the [build folder](https://github.com/kaka-lin/nd013-c1-vision-starter/tree/main/build).
+
+For convenience and rapidly use, supply two scripta for build and run the image, as below:
+
+```bash
+$ chmod +x build.sh
+$ chmod +x run.sh
+```
+
+#### Build the image
+
+```bash
+$ ./build.sh
+```
+
+#### Run the image
+
+```bash
+$ ./run.sh
+```
 
 ### Dataset
+
+The tfrecords have images of various enviroment conditions (sunny, rainy, fog, cloud, day, night etc).
+
+#### Downloading and processing the data
+
+Run the following command to download and process the data:
+
+```bash
+$ python download_process.py --data_dir data
+```
+
 #### Dataset analysis
-This section should contain a quantitative and qualitative description of the dataset. It should include images, charts and other visualizations.
-#### Cross validation
-This section should detail the cross validation strategy and justify your approach.
+
+The dataset contains 1997 images, split across 100 files. Each file contains ~20 images, which are taken from the same journey. These journeys were made in various day and weather conditions as shown in the images below:
+
+<p float="left" align="middle">
+  <img src="images/data1.png" width="300"/>
+  <img src="images/data2.png" width="300"/>
+  <img src="images/data3.png" width="300"/>
+  <img src="images/data4.png" width="300"/>
+</p>
+
+##### Class Distribution Analysis
+
+The images are annotated with 3 classes: pedestrian, vehicle and cyclist. However, these classes are not equally represented in the dataset:
+
+![](images/class_distribuition.png)
+
+
+#### Creating the splits
+
+A split of `75% training, 15% validation and 10% testing` of files is used. This is selected to have the most proportion of training files, but also to avoid overfitting the data.
+
+To create the splits, run the following command:
+
+```
+$ python create_splits.py --source data/processed --destination data
+```
 
 ### Training
+
 #### Reference experiment
-This section should detail the results of the reference experiment. It should includes training metrics and a detailed explanation of the algorithm's performances.
+
+We use `SSD Resnet50 640x640` model and train it with pre-trained weight. And the configuration file is the one generated based on `pipeline.config`.
+
+<p float="left" align="middle">
+  <img src="images/reference_experiment/classification_loss.png "width="300"/>
+  <img src="images/reference_experiment/localization_loss.png "width="300"/>
+  <img src="images/reference_experiment/regularization_loss.png "width="300"/>
+  <img src="images/reference_experiment/total_loss.png "width="300"/>
+</p>
+
+At 24,000 steps, the reference model achieved the following metrics on the validation set:
+
+| mAP | mAP (large) | mAP (medium) | mAP (small) | mAP (@.5 IOU) | mAP (@.75 IOU) |
+|----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+|  0.0761 | 0.2539 | 0.2177 | 0.0337 | 0.1473 | 0.0714 |
+
+
+| AR@1 | AR@10 | AR@100 | AR@100 (large) | AR@100 (medium) | AR@100 (small) |
+|------|------|------|------|------|------|
+| 0.0211 | 0.0923 | 0.14158 | 0.325 | 0.3513 | 0.0832
 
 #### Improve on the reference
-This section should highlight the different strategies you adopted to improve your model. It should contain relevant figures and details of your findings.
+
+#### Experiment 1
+
+- Learning rate: Exponential decay
+
+<p float="left" align="middle">
+  <img src="images/experiments_1/classification_loss.png "width="300"/>
+  <img src="images/experiments_1/localization_loss.png "width="300"/>
+  <img src="images/experiments_1/regularization_loss.png "width="300"/>
+  <img src="images/experiments_1/total_loss.png "width="300"/>
+</p>
+
+At 24,000 steps, the reference model achieved the following metrics on the validation set:
+
+| mAP | mAP (large) | mAP (medium) | mAP (small) | mAP (@.5 IOU) | mAP (@.75 IOU) |
+|----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+|  0.1519 | 0.4356 | 0.4492 | 0.074792 | 0.2914 | 0.13766 |
+
+
+| AR@1 | AR@10 | AR@100 | AR@100 (large) | AR@100 (medium) | AR@100 (small) |
+|------|------|------|------|------|------|
+| 0.04145 | 0.162992 | 0.219177 | 0.8128 | 0.5164 | 0.14509
+
+The following GIF, shows the model's inference:
+
+![](images/animation.gif)
