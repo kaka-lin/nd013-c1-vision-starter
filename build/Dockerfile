@@ -43,7 +43,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         pkg-config \
         software-properties-common \
         unzip \
-        wget
+        wget \
+        imagemagick
 
 # Install TensorRT if not building for PowerPC
 # NOTE: libnvinfer uses cuda11.1 versions
