@@ -96,3 +96,8 @@ RUN git clone https://github.com/tensorflow/models.git && \
 # Install google cloud sdk
 RUN curl -sSL https://sdk.cloud.google.com | bash
 ENV PATH "$PATH:/root/google-cloud-sdk/bin"
+
+# Fixing ImportError: SystemError: <built-in method __contains__ of dict object at 0x7f59d17fc700>
+# returned a result with an error set
+# Numpy: 1.22.2
+RUN pip install numpy -U
