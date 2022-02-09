@@ -182,6 +182,12 @@ The tfrecords have images of various enviroment conditions (sunny, rainy, fog, c
 
 #### Downloading and processing the data
 
+Before you download dataset, you need to login, as below:
+
+```bash
+$ gcloud auth login
+```
+
 Run the following command to download and process the data:
 
 ```bash
