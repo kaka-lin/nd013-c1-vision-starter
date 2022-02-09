@@ -224,6 +224,20 @@ $ python create_splits.py --source data/processed --destination data
 
 ### Training
 
+To train the model, run the following command:
+
+- training with reference config
+
+    ```bash
+    $ python experiments/model_main_tf2.py --model_dir=experiments/reference/ --pipeline_config_path=experiments/reference/pipeline_new.config
+    ```
+- training with experiment config
+
+    ```bash
+    # change <cnt> to your experiment number, like: 1, 2, ...
+    $ python experiments/model_main_tf2.py --model_dir=experiments/experiment_<cnt>/ --pipeline_config_path=experiments/experiment_<cnt>/pipeline_new.config
+    ```
+
 #### Reference experiment
 
 We use `SSD Resnet50 640x640` model and train it with pre-trained weight. And the configuration file is the one generated based on `pipeline.config`.
@@ -244,32 +258,65 @@ At 24,000 steps, the reference model achieved the following metrics on the valid
 
 | AR@1 | AR@10 | AR@100 | AR@100 (large) | AR@100 (medium) | AR@100 (small) |
 |------|------|------|------|------|------|
-| 0.0211 | 0.0923 | 0.14158 | 0.325 | 0.3513 | 0.0832
+| 0.0211 | 0.0923 | 0.14158 | 0.325 | 0.3513 | 0.0832 |
 
 #### Improve on the reference
 
-#### Experiment 1
+Several experiments were conducted to improve the on the reference. The following table summaries the changes (from the reference) made in some of these experiments:
 
-- Learning rate: Exponential decay
+| Experiment | Changes from reference|
+|------------|-----------------------|
+| Experiment 1 | Learning rate: Exponential decay|
+| Experiment 2 | Augmentation: Randomly convert entire image to grey scale. <br />Learning rate: Exponential decay |
+
+Why these experiments improve the performance of the model:
+
+- `random_rgb_to_gray`:
+
+    This could be useful to `not rely on colored images`, *can remove some of the variations caused by the different lighting conditions, like at night*.
+
+- `initial_learning_rate`:
+
+    Using *0.001* to be initial learning rate rather than *0.04* which helps training converge.
+
+- `exponential_decay_learning_rate`:
+
+    Using an `exponential decay learning rate`, rather than a cosine learning rate. More information about learning rates can be found [here](https://github.com/tensorflow/models/blob/master/research/object_detection/protos/optimizer.proto).
+
+The table below summaries the results of the 2 experiments that had a noticeable improvement over the reference:
+
+| Experiment | mAP | mAP (large) | mAP (medium) | mAP (small) | mAP (@.5 IOU) | mAP (@.75 IOU) |
+|------------|----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| Reference  | 0.0761 | 0.2539 | 0.2177 | 0.0337 | 0.1473 | 0.0714 |
+| Experiment 1 | 0.1519 | 0.4356 | 0.4492 | 0.074792 | 0.2914 | 0.13766 |
+| Experiment 2 | 0.1659 | 0.7454 | 0.4538 | 0.082638 | 0.3115 | 0.15221 |
+
+| Experiment | AR@1 | AR@10 | AR@100 | AR@100 (large) | AR@100 (medium) | AR@100 (small) |
+|------|------|------|------|------|------|------|
+| Reference | 0.0211 | 0.0923 | 0.14158 | 0.325 | 0.3513 | 0.0832 |
+| Experiment 1 | 0.04145 | 0.162992 | 0.219177 | 0.8128 | 0.5164 | 0.14509
+| Experiment 2 | 0.04342 | 0.168343 | 0.227448 | 0.7649 | 0.510043 | 0.154307 |
+
+##### Experiment 1
 
 <p float="left" align="middle">
-  <img src="images/experiments_1/classification_loss.png "width="300"/>
-  <img src="images/experiments_1/localization_loss.png "width="300"/>
-  <img src="images/experiments_1/regularization_loss.png "width="300"/>
-  <img src="images/experiments_1/total_loss.png "width="300"/>
+  <img src="images/experiment_1/classification_loss.png "width="300"/>
+  <img src="images/experiment_1/localization_loss.png "width="300"/>
+  <img src="images/experiment_1/regularization_loss.png "width="300"/>
+  <img src="images/experiment_1/total_loss.png "width="300"/>
 </p>
 
-At 24,000 steps, the reference model achieved the following metrics on the validation set:
 
-| mAP | mAP (large) | mAP (medium) | mAP (small) | mAP (@.5 IOU) | mAP (@.75 IOU) |
-|----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
-|  0.1519 | 0.4356 | 0.4492 | 0.074792 | 0.2914 | 0.13766 |
+##### Experiment 2
 
-
-| AR@1 | AR@10 | AR@100 | AR@100 (large) | AR@100 (medium) | AR@100 (small) |
-|------|------|------|------|------|------|
-| 0.04145 | 0.162992 | 0.219177 | 0.8128 | 0.5164 | 0.14509
+<p float="left" align="middle">
+  <img src="images/experiment_2/classification_loss.png "width="300"/>
+  <img src="images/experiment_2/localization_loss.png "width="300"/>
+  <img src="images/experiment_2/regularization_loss.png "width="300"/>
+  <img src="images/experiment_2/total_loss.png "width="300"/>
+</p>
 
 The following GIF, shows the model's inference:
 
 ![](images/animation.gif)
+
